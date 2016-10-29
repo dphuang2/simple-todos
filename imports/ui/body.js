@@ -1,13 +1,15 @@
+import { Meteor } from 'meteor/meteor';
 import { Template } from 'meteor/templating';
 import { ReactiveDict  } from 'meteor/reactive-dict';
 
 import { Tasks  } from '../api/tasks.js';
- 
+
 import './body.html';
 import './task.js';
- 
+
 Template.body.onCreated(function bodyOnCreated() {
-    this.state = new ReactiveDict();
+  this.state = new ReactiveDict();
+  Meteor.subscribe('tasks');
 });
 
 Template.body.helpers({
@@ -20,8 +22,8 @@ Template.body.helpers({
     // Otherwise, return all of the tasks
     return Tasks.find({}, { sort: { createdAt: -1 } });
   },
-  incompleteCount() {
-    return Tasks.find({ checked: { $ne: true } }).count();
+  eventCount() {
+    return Tasks.find({}).count();
   },
 });
 
@@ -38,10 +40,8 @@ Template.body.events({
     const text = target.text.value;
 
     // Insert a task into the collection
-    Tasks.insert({
-      text,
-      createdAt: new Date(), // current time
-    });
+    Meteor.call('tasks.insert', text);
+ 
 
     // Clear form
     target.text.value = '';
